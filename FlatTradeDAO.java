@@ -1,6 +1,8 @@
 package schemaDesign_trades;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +23,10 @@ public class FlatTradeDAO implements TradeDAO {
 
 	private final HTable table;
 	private final static byte [] ENTRY_FAMILY = Bytes.toBytes("entry");
+
+	private final static DateFormat rowkeyDateFormat = new SimpleDateFormat("yyyyMMdd");
+	private final static char delimChar = '_';
+
 	
 	public FlatTradeDAO(Configuration conf) throws IOException{
 		//TODO &&&MJM NOT DE-PLAGGED YET.
@@ -37,12 +43,13 @@ public class FlatTradeDAO implements TradeDAO {
 	}
 	
 	@Override
-	public void save(Trade trade) throws IOException {
+	public void store(Trade trade) throws IOException {
 		//TODO &&&MJM NOT DE-PLAGGED YET.
-		Put put = new Put(Bytes.toBytes(trade.getAuthorId()));
+		/* Put put = new Put(Bytes.toBytes(trade.getAuthorId()));
 		put.add(ENTRY_FAMILY, Bytes.toBytes(dateToColumn(trade.getTradeDate())), 
 				Bytes.toBytes(trade.getTitle()));
 		table.put(put);
+		*/
 	}
 	
 	private String dateToColumn(Date date ){
@@ -65,11 +72,22 @@ public class FlatTradeDAO implements TradeDAO {
 		return new Date(Long.MAX_VALUE-reverseStamp);
 	}
 	
+	// TODO MJM: Revert this to private nonstatic.
+	public static String formRowkey(String symbol, Long time){
+		String timeString = rowkeyDateFormat.format(time);
+		String rowkey = symbol + delimChar + timeString; 
+		System.out.println("DEBUG formRowkey(): formatted rowkey as: " + rowkey); // TODO &&&MJM Remove this.
+		System.out.println("DEBUG formRowkey(): time.getTime class & printable values: " + timeString); // TODO &&&MJM Remove this.
+		
+		return rowkey;
+	}
+
+	
 	@Override
-	public List<Trade> getTradesByDate(String authorId, Date from,
-			//TODO &&&MJM NOT DE-PLAGGED YET.
-			Date to) throws IOException {
+	public List<Trade> getTradesByDate(String symbol, Long from, Long to) throws IOException {
+		//TODO &&&MJM NOT DE-PLAGGED YET.
 		List<Trade> trades = new ArrayList<Trade>();
+		/*
 		Get get = new Get(Bytes.toBytes(authorId));
 		
 		FilterList filters = new FilterList();
@@ -88,6 +106,7 @@ public class FlatTradeDAO implements TradeDAO {
 			String title = Bytes.toString(entry.getValue());
 			trades.add(new Trade(authorId, title, publishDate));
 		}
+	*/
 		
 		return trades;
 	}

@@ -22,7 +22,8 @@ public class Trade {
 	private final static Currency CURRENCY = Currency.getInstance(LOCALE);
 	
 	/**
-	 * constructor for a Trade object 
+	 * constructor for a Trade object
+	 * This implementation explicitly sets the tradeTime to a given value. 
 	 * @param tradeSymbol stock symbol, ex: "GOOG"
 	 * @param tradePrice per-share price 
 	 * @param tradeVolume number of shares transacted
@@ -30,6 +31,20 @@ public class Trade {
 	 */
 	public Trade(String tradeSymbol, Float tradePrice, Long tradeVolume, Long tradeTime) {
 		this.tradeTime = tradeTime;
+		this.tradeSymbol = tradeSymbol; 
+		this.tradePrice = tradePrice;
+		this.tradeVolume = tradeVolume;
+	}
+
+	/**
+	 * constructor for a Trade object 
+	 * This implementation sets the tradeTime to the current time. 
+	 * @param tradeSymbol stock symbol, ex: "GOOG"
+	 * @param tradePrice per-share price 
+	 * @param tradeVolume number of shares transacted
+	 */
+	public Trade(String tradeSymbol, Float tradePrice, Long tradeVolume) {
+		this.tradeTime = new Date().getTime();
 		this.tradeSymbol = tradeSymbol; 
 		this.tradePrice = tradePrice;
 		this.tradeVolume = tradeVolume;

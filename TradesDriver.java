@@ -13,17 +13,19 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 public class TradesDriver {
 	
 	private final static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
+	private final static String tablePathTall = "/user/user20/trades_tall";
+	private final static String tablePathFlat = "/user/user20/trades_flat";
+
 	
 	public static void main(String[] args) throws IOException {
 		
-		// TODO: After implementing generateDataSet() uncomment this for loop.  
 		// List<Trade> testTradeSet = generateDataSet();
 		// printTrades(testTradeSet);
 		
 		Configuration conf = HBaseConfiguration.create();
 		
 		// Exercise the tall-narrow implementation.
-		TradeDAO tradeDao = new TallTradeDAO(conf);
+		TradeDAO tradeDao = new TallTradeDAO(conf, tablePathTall);
 		//OLD: exercizeDAO(tradeDao, trades);
 
 		System.out.println("Using DAO: " + tradeDao.getClass());
@@ -76,7 +78,7 @@ public class TradesDriver {
 		trades.add(new Trade("CSCO", 22.88f, 4330l, 1381401155l*1000));
 		trades.add(new Trade("CSCO", 22.90f, 4663l, 1381401456l*1000));
 		trades.add(new Trade("CSCO", 22.92f, 4996l, 1381401757l*1000));
-		trades.add(new Trade("CSCO", 22.94f, 5329l, 1381402058l));
+		trades.add(new Trade("CSCO", 22.94f, 5329l, 1381402058l*1000));
 		trades.add(new Trade("CSCO", 22.96f, 5662l, 1381402359l*1000));
 		trades.add(new Trade("CSCO", 22.98f, 5995l, 1381402660l*1000));
 		trades.add(new Trade("CSCO", 22.99f, 6328l, 1381402801l*1000));

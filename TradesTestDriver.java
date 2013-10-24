@@ -11,48 +11,51 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 
-public class TestDriver {
+public class TradesTestDriver {
 	
 	private final static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
 	private final static DateFormat dateFormatYyyyMmDd = new SimpleDateFormat("yyyyMMdd");
+
+	private final static String tablePathTall = "/user/user20/trades_tall";
+	private final static String tablePathFlat = "/user/user20/trades_flat";
+	
+	private final static String fromDateStr = "20130101";
+	private final static String toDateStr = "20131231";
 	
 	public static void main(String[] args) throws IOException {
 		
-		// TODO: After implementing generateDataSet() uncomment this for loop.  
 		List<Trade> testTradeSet = generateDataSet();
-		// printTrades(testTradeSet);
+		printTrades(testTradeSet);
 		
-		Date myDate = new Date();
-		System.out.println("The timestamp for current time is " + myDate.getTime());
-
-		System.out.println("Testing rowkey conversions for TALL table schema...");
-		String rowkey = TallTradeDAO.formRowkey("GOOG", myDate.getTime());
-		String[] rowkeyTokens = rowkey.split("_"); // tokenize rowkey				
-		Long time = Long.parseLong(rowkeyTokens[1]); // convert the timestamp part into a Date object
-		System.out.println("DEBUG: Tokens from rowkey are " + 
-				rowkeyTokens[0] + " and " + rowkeyTokens[1]); 
-		Long reconstitutedTime = Long.MAX_VALUE - Long.parseLong(rowkeyTokens[1]); 
-		System.out.println("DEBUG: The reconstituted timestamep is " + 
-				reconstitutedTime); 
+		Configuration conf = HBaseConfiguration.create();
 		
-		System.out.println("Testing rowkey conversions for WIDE table schema...");
-		String wideRowkey = FlatTradeDAO.formRowkey("GOOG", myDate.getTime());
-		String[] wideRowkeyTokens = wideRowkey.split("_"); // tokenize rowkey				
-		System.out.println("DEBUG: Tokens from rowkey are " + 
-				wideRowkeyTokens[0] + " and " + wideRowkeyTokens[1]); 
-		Date reconstitutedDate = dateFormatYyyyMmDd.parse(wideRowkeyTokens[1], new ParsePosition(0));
-		System.out.println("DEBUG: The reconstituted timestamep is " + 
-				reconstitutedDate.getTime()); 
-		System.out.println("DEBUG: The formatted timestring for the reconstituted timestamp is " +
-				dateFormat.format(reconstitutedDate) );
+		// Exercise the tall-narrow implementation.
+		TradeDAO tradeDao = new TallTradeDAO(conf, tablePathTall);
 
+		System.out.println("Using DAO: " + tradeDao.getClass());
+
+		// Store the trades to DAO
+		for (Trade trade : testTradeSet){
+			tradeDao.store(trade);
+		}
+
+		// Retrieve values from the DAO
+//		Date fromDate = dateFormatYyyyMmDd.parse(fromDateStr, new ParsePosition(0));
+		Long fromDate = dateFormatYyyyMmDd.parse(fromDateStr, new ParsePosition(0)).getTime();
+//		Date toDate = dateFormatYyyyMmDd.parse(toDateStr, new ParsePosition(0));
+		Long toDate = dateFormatYyyyMmDd.parse(toDateStr, new ParsePosition(0)).getTime();
+
+		List<Trade> retrievedTradeSet = tradeDao.getTradesByDate("CSCO", fromDate, toDate);
+		System.out.println("Printing Trades retreived from table.");
+		printTrades(retrievedTradeSet);
+
+		tradeDao.close();
 	}
 	
 	private static void printTrades(List<Trade> trades) {
 		System.out.println("Printing " + trades.size() + " trades.");
 		for (Trade trade : trades) {
 			System.out.println(trade);
-			System.out.println(trade.getTime());
 		}
 	}
 
@@ -90,6 +93,20 @@ public class TestDriver {
 		return trades;
 	}
 	
+/*	&&&MJM: Get rid of this method. I pulled it into main().
+	public static void exercizeDAO(TradeDAO dao, List<Trade> trades) throws IOException {
+		//TODO &&&MJM NOT DE-PLAGGED YET.
+		System.out.println("----------------");
+		System.out.println("Running with dao: " + dao.getClass());
+		System.out.println("----------------");
+		for (Trade trade : trades){
+			dao.log(trade);
+		}
+		getTradesByDate(dao, "author1", new Date(22222222), new Date(33333333));
+		getTradesByDate(dao, "author3", new Date(55555555), new Date(55555555));
+	}
+*/
+
 	/**
 	 * scans for trades and print the result set. 
 	 * This method simulates operations on a TradeDAO.
@@ -100,9 +117,8 @@ public class TestDriver {
 	 * @throws IOException
 	 */
 	private static void getTradesByDate(TradeDAO dao, String symbol, Long from, Long to)
+	//TODO &&&MJM NOT DE-PLAGGED YET.
 			throws IOException {
-		//TODO &&&MJM NOT DE-PLAGGED YET.
-		/*
 		
 		System.out.println("Getting trades of " + symbol + 
 				" from " + dateFormat.format(from) + 
@@ -118,42 +134,5 @@ public class TestDriver {
 		for (Trade trade : dao.getTradesByDate(symbol, from, to)) {
 			System.out.println(trade);
 		}
-	*/
 	}
-	
-	private final static char delimChar = '_';
-	private static String formRowkey(String symbol, Long time){
-		//TODO &&&MJM NOT DE-PLAGGED YET.
-		String timeString = String.format("%d", (Long.MAX_VALUE-time) );
-		String rowkey = symbol + delimChar + timeString; 
-				// date.getTime(); 
-				// trade.getDate().getTime().toString(); 
-		System.out.println("DEBUG formRowkey(): time is: " + time); // TODO &&&MJM Remove this.
-		System.out.println("DEBUG formRowkey(): formatted rowkey as: " + rowkey); // TODO &&&MJM Remove this.
-		System.out.println("DEBUG formRowkey(): time.getTime class & printable values: " + timeString); // TODO &&&MJM Remove this.
-//		System.out.println("DEBUG formRowkey(): date.getTime class & printable values: " + date.getTime() + ", class is LONG."); // TODO &&&MJM Remove this.
-
-		
-		/* TODO Code to reverse the timestamp
-		//TODO &&&MJM NOT DE-PLAGGED YET.
-		String reversedDateAsStr=
-				Long.toString(Long.MAX_VALUE-timestamp);
-		StringBuilder builder = new StringBuilder();
-		
-		for ( int i = reversedDateAsStr.length(); i < 19; i++){
-			builder.append('0');
-		}
-		
-		builder.append(reversedDateAsStr);
-		return builder.toString();
-		*/ 
-		return rowkey;
-	}
-// &&&MJM Junk for my Java learning
-//	System.out.println("Using DAO: " + testDao.getClass());
-//		String.format("%d", value);		
-//	"between [" + DATE_FORMAT.format(start) + "] " +
-//	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
-
-	
 }
