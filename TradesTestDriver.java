@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.client.Get;
 
 public class TradesTestDriver {
 	
@@ -19,13 +21,14 @@ public class TradesTestDriver {
 	private final static String tablePathTall = "/user/user20/trades_tall";
 	private final static String tablePathFlat = "/user/user20/trades_flat";
 	
-	private final static String fromDateStr = "20130101";
-	private final static String toDateStr = "20131231";
+	private final static String symbolToGet = "GOOG";
+	private final static String fromDateStr = "20131020";
+	private final static String toDateStr = "20131021";
 	
 	public static void main(String[] args) throws IOException {
 		
-		List<Trade> testTradeSet = generateDataSet();
-		printTrades(testTradeSet);
+		// List<Trade> testTradeSet = generateDataSet();
+		// printTrades(testTradeSet);
 		
 		Configuration conf = HBaseConfiguration.create();
 		
@@ -35,22 +38,28 @@ public class TradesTestDriver {
 		System.out.println("Using DAO: " + tradeDao.getClass());
 
 		// Store the trades to DAO
-		for (Trade trade : testTradeSet){
-			tradeDao.store(trade);
-		}
+		// for (Trade trade : testTradeSet){
+		// 	tradeDao.store(trade);
+		// }
 
+		// DEBUG &&&MJM: Test getting one value back.
+		// Trade testTrade = tradeDao.getRow("GOOG_9223370655438999807");
+		// System.out.println("Trade from get:");
+		// System.out.println(testTrade);
+		
 		// Retrieve values from the DAO
 //		Date fromDate = dateFormatYyyyMmDd.parse(fromDateStr, new ParsePosition(0));
 		Long fromDate = dateFormatYyyyMmDd.parse(fromDateStr, new ParsePosition(0)).getTime();
 //		Date toDate = dateFormatYyyyMmDd.parse(toDateStr, new ParsePosition(0));
 		Long toDate = dateFormatYyyyMmDd.parse(toDateStr, new ParsePosition(0)).getTime();
 
-		List<Trade> retrievedTradeSet = tradeDao.getTradesByDate("CSCO", fromDate, toDate);
+		List<Trade> retrievedTradeSet = tradeDao.getTradesByDate(symbolToGet, fromDate, toDate);
 		System.out.println("Printing Trades retreived from table.");
 		printTrades(retrievedTradeSet);
 
 		tradeDao.close();
 	}
+	
 	
 	private static void printTrades(List<Trade> trades) {
 		System.out.println("Printing " + trades.size() + " trades.");
@@ -93,19 +102,6 @@ public class TradesTestDriver {
 		return trades;
 	}
 	
-/*	&&&MJM: Get rid of this method. I pulled it into main().
-	public static void exercizeDAO(TradeDAO dao, List<Trade> trades) throws IOException {
-		//TODO &&&MJM NOT DE-PLAGGED YET.
-		System.out.println("----------------");
-		System.out.println("Running with dao: " + dao.getClass());
-		System.out.println("----------------");
-		for (Trade trade : trades){
-			dao.log(trade);
-		}
-		getTradesByDate(dao, "author1", new Date(22222222), new Date(33333333));
-		getTradesByDate(dao, "author3", new Date(55555555), new Date(55555555));
-	}
-*/
 
 	/**
 	 * scans for trades and print the result set. 
