@@ -1,4 +1,4 @@
-package schemaDesign_trades;
+package tradeStorage;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,10 +15,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 public class CreateTableUtils {
 
-	private static String tablePath;
-	private static String inputFilePath;
-	private final static byte [] baseCF = Bytes.toBytes("CF1");
-	
 	/**
 	 * creates a table at the given path.
 	 * @param tablePath
@@ -26,8 +22,7 @@ public class CreateTableUtils {
 	 * @throws IOException
 	 */
 	public static boolean createTable(Configuration conf, String tablePath, byte[][] colFams) throws IOException {
-//		System.out.println("Creating table " + tablePath + "...");
-//		Configuration conf = HBaseConfiguration.create();
+		System.out.println("Creating table " + tablePath + "...");
 		HBaseAdmin admin = new HBaseAdmin(conf);
 		byte[] tablePathBytes = Bytes.toBytes(tablePath); 
 		HTableDescriptor desc = new HTableDescriptor(tablePathBytes);
@@ -41,6 +36,7 @@ public class CreateTableUtils {
 		boolean avail = admin.isTableAvailable(tablePathBytes);
 		System.out.println("Table " + tablePath + " available: " + avail);
 		
+		if (admin != null) admin.close();
 		return avail;
 	}
 	

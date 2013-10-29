@@ -1,4 +1,4 @@
-package schemaDesign_trades;
+package tradeStorage;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -13,7 +13,7 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 
 public class TestDriver {
 	
-	private final static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
+	private final static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 	private final static DateFormat dateFormatYyyyMmDd = new SimpleDateFormat("yyyyMMdd");
 	
 	public static void main(String[] args) throws IOException {
@@ -26,7 +26,7 @@ public class TestDriver {
 		System.out.println("The timestamp for current time is " + myDate.getTime());
 
 		System.out.println("Testing rowkey conversions for TALL table schema...");
-		String rowkey = TallTradeDAO.formRowkey("GOOG", myDate.getTime());
+		String rowkey = TradeDAOTall.formRowkey("GOOG", myDate.getTime());
 		String[] rowkeyTokens = rowkey.split("_"); // tokenize rowkey				
 		Long time = Long.parseLong(rowkeyTokens[1]); // convert the timestamp part into a Date object
 		System.out.println("DEBUG: Tokens from rowkey are " + 
@@ -36,7 +36,7 @@ public class TestDriver {
 				reconstitutedTime); 
 		
 		System.out.println("Testing rowkey conversions for WIDE table schema...");
-		String wideRowkey = FlatTradeDAO.formRowkey("GOOG", myDate.getTime());
+		String wideRowkey = TradeDAOFlat.formRowkey("GOOG", myDate.getTime());
 		String[] wideRowkeyTokens = wideRowkey.split("_"); // tokenize rowkey				
 		System.out.println("DEBUG: Tokens from rowkey are " + 
 				wideRowkeyTokens[0] + " and " + wideRowkeyTokens[1]); 
@@ -153,7 +153,7 @@ public class TestDriver {
 //	System.out.println("Using DAO: " + testDao.getClass());
 //		String.format("%d", value);		
 //	"between [" + DATE_FORMAT.format(start) + "] " +
-//	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
+//	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 
 	
 }

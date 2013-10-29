@@ -1,4 +1,4 @@
-package schemaDesign_trades;
+package tradeStorage;
 
 import java.io.IOException;
 import java.util.Date;

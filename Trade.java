@@ -1,4 +1,4 @@
-package schemaDesign_trades;
+package tradeStorage;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -17,7 +17,7 @@ public class Trade {
 	private final Long tradeVolume;
 
 	// Constants for a locale 
-	private final static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
+	private final static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 	private final static Locale LOCALE = Locale.US;
 	private final static Currency CURRENCY = Currency.getInstance(LOCALE);
 	

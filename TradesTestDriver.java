@@ -1,4 +1,4 @@
-package schemaDesign_trades;
+package tradeStorage;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -15,15 +15,15 @@ import org.apache.hadoop.hbase.client.Get;
 
 public class TradesTestDriver {
 	
-	private final static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
+	private final static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 	private final static DateFormat dateFormatYyyyMmDd = new SimpleDateFormat("yyyyMMdd");
 
 	private final static String tablePathTall = "/user/user20/trades_tall";
 	private final static String tablePathFlat = "/user/user20/trades_flat";
 	
 	private final static String symbolToGet = "GOOG";
-	private final static String fromDateStr = "20131020";
-	private final static String toDateStr = "20131021";
+	private final static String fromDateStr = "20131001";
+	private final static String toDateStr = "20131031";
 	
 	public static void main(String[] args) throws IOException {
 		
@@ -33,7 +33,11 @@ public class TradesTestDriver {
 		Configuration conf = HBaseConfiguration.create();
 		
 		// Exercise the tall-narrow implementation.
-		TradeDAO tradeDao = new TallTradeDAO(conf, tablePathTall);
+		// TradeDAO tradeDao = new TradeDAOTall(conf, tablePathTall);
+
+		// Exercise the flat-wide implementation.
+		TradeDAO tradeDao = new TradeDAOFlat(conf, tablePathFlat);
+
 
 		System.out.println("Using DAO: " + tradeDao.getClass());
 
