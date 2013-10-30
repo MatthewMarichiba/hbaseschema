@@ -7,12 +7,15 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.util.Bytes;
 
+/** 
+ * a utility class to help with creating tables, 
+ * regardless of their schema
+ */
 public class CreateTableUtils {
 
 	/**
@@ -29,6 +32,7 @@ public class CreateTableUtils {
 		HColumnDescriptor coldef;
 		for (byte[] colFam : colFams) {
 			coldef = new HColumnDescriptor(colFam);
+			// TODO: coldef.setMaxVersions(1000000000);
 			desc.addFamily(coldef);
 		}
 		admin.createTable(desc);
@@ -45,7 +49,7 @@ public class CreateTableUtils {
 	 * Each trade is added to a List<Trade>, and the list is returned. 
 	 * File format: TICKER, PRICE, VOLUME, TIMESTAMP
 	 * @param filePath
-	 * @return
+	 * @return a List of Trade objects
 	 * @throws IOException
 	 */
 	public static List<Trade> getDataFromFile(String filePath) throws IOException {
@@ -58,15 +62,15 @@ public class CreateTableUtils {
 		System.out.println("Importing data from input file " + filePath + "...");
 		while ((currentLine = br.readLine()) != null) {
 			System.out.println(currentLine);
-			tokens = currentLine.split("\\s*,\\s*");
+			tokens = currentLine.split("\\s*,\\s*"); // Split on comma boundaries, stripping white space.
 			if ( (tokens != null) && (tokens.length == 4) )  {
 				trades.add(new Trade(tokens[0], Float.parseFloat(tokens[1]), Long.parseLong(tokens[2]), Long.parseLong(tokens[3])));
-				// System.out.println("Added trade to dataset: " + trades.toArray()[trades.size()-1]);
 			} else {
 				System.out.println("Ignoring malformed line: " + currentLine);
 			}
 		}
 		
+		// Close the file & exit.
 		if (br != null) br.close();
 		return trades;
 	}
@@ -77,7 +81,6 @@ public class CreateTableUtils {
 	 * @return a List of Trade objects
 	 */
 	public static List<Trade> generateDataSet() {
-		//TODO &&&MJM NOT DE-PLAGGED YET.
 		List<Trade> trades = new ArrayList<Trade>();
 		// Params: String tradeSymbol, Float tradePrice, Long tradeVolume, Long tradeTime
 		trades.add(new Trade("AMZN", 304.66f, 1333l, 1381396363l*1000));

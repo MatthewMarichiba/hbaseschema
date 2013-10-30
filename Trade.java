@@ -24,10 +24,10 @@ public class Trade {
 	/**
 	 * constructor for a Trade object
 	 * This implementation explicitly sets the tradeTime to a given value. 
+	 * @param tradeDate timestamp of the trade event
 	 * @param tradeSymbol stock symbol, ex: "GOOG"
 	 * @param tradePrice per-share price 
 	 * @param tradeVolume number of shares transacted
-	 * @param tradeDate timestamp of the trade event
 	 */
 	public Trade(String tradeSymbol, Float tradePrice, Long tradeVolume, Long tradeTime) {
 		this.tradeTime = tradeTime;

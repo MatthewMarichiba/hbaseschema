@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.util.Bytes;
 
 public class LookupTrades {
 
@@ -22,8 +21,8 @@ public class LookupTrades {
 		// args[4]: stopdate
 		
 		// 1. Check for correct args. Parse args. 
-		if (args.length <= 3) { // quit if not enough args provided
-			System.out.println("LookupTrades {tall | flat} <path to table> symbol [startdate[, stopdate]]");
+		if (args.length < 3) { // quit if not enough args provided
+			System.out.println("Usage: LookupTrades {tall | flat} <path to table> symbol [startdate[, stopdate]]");
 			System.out.println("Format dates as YYYYMMDD.");
 			System.out.println("Example: LookupTrades flat /table/path CSCO 20131021 20131025");
 			return;
@@ -34,11 +33,12 @@ public class LookupTrades {
 			return;
 		} 
 
-		String tablePath = args[1];
 		String symbol = args[2];
 
-		Long startDate = Long.MIN_VALUE;
-		Long stopDate = Long.MAX_VALUE;
+//		Long startDate = Long.MIN_VALUE;
+//		Long stopDate = Long.MAX_VALUE;
+		Long startDate = dateArgFormat.parse("19710101", new ParsePosition(0)).getTime();
+		Long stopDate = dateArgFormat.parse("29991231", new ParsePosition(0)).getTime();
 		if (args.length == 3) {	// Start & stop dates not provided
 			System.out.println("No start and stop dates specified. Retrieving all trades for " + symbol);
 		} else if (args.length == 4) { // Only a start date is provided
@@ -47,10 +47,10 @@ public class LookupTrades {
 		} else { // Both start & stop dates are provided
 			startDate = dateArgFormat.parse(args[3], new ParsePosition(0)).getTime(); 
 			stopDate = dateArgFormat.parse(args[4], new ParsePosition(0)).getTime(); 
-			System.out.println("Retrieving trades for " + symbol + "from " + args[3] + " to " + args[4]);
+			System.out.println("Retrieving trades for " + symbol + " from " + args[3] + " to " + args[4]);
 		}
 		
-		// 2. Open an HBaseConfiguration connection and instantiate a DAO to access the table.
+		// 2. Open connection to HBaseConfiguration and instantiate DAO to access the table.
 		Configuration conf = HBaseConfiguration.create();
 		TradeDAO tradeDao = null;
 		if (args[0].equals("tall")) {
@@ -62,7 +62,6 @@ public class LookupTrades {
 
 		// 3. Read a set of trades via the DAO.
 		List<Trade> retrievedTradeSet = tradeDao.getTradesByDate(symbol, startDate, stopDate);
-		System.out.println("Printing Trades retreived from DAO.");
 
 		// 4. Print the results and exit.
 		printTrades(retrievedTradeSet);

@@ -1,12 +1,7 @@
 package tradeStorage;
 
-import static org.apache.hadoop.hbase.util.Bytes.toLong;
-
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -34,19 +29,9 @@ public class TradeDAOTall implements TradeDAO {
 	
 	/**
 	 * constructs a TradeDAO using a tall-narrow table schema.
-	 * This implementation assigns a default pathToTable: /user/mapr/trades_tall 
-	 * @param conf the HBase configuration
-	 * @throws IOException
-	 */
-	public TradeDAOTall(Configuration conf) throws IOException{
-		table = new HTable(conf, tablePath); 
-	}
-	
-	/**
-	 * constructs a TradeDAO using a tall-narrow table schema.
 	 * This implementation takes a pathToTable for the data table. 
 	 * @param conf the HBase configuration
-	 * @param pathToTable the path to the table, stated from the root of the Hadoop filesystem.
+	 * @param pathToTable the path to the table, stated from the root of the Hadoop filesystem. pass null to use a default table location.
 	 * @throws IOException
 	 */
 	public TradeDAOTall(Configuration conf, String pathToTable) throws IOException{
@@ -63,7 +48,6 @@ public class TradeDAOTall implements TradeDAO {
 	
 	@Override
 	public void store(Trade trade) throws IOException {
-		//TODO &&&MJM NOT DE-PLAGGED YET.
 		System.out.println("Putting trade: " + trade);
 		String rowkey = formRowkey(trade.getSymbol(), trade.getTime());
 		
@@ -76,20 +60,18 @@ public class TradeDAOTall implements TradeDAO {
 	}
 	
 	/** 
-	 * generates a rowkey for tall table implementation. 
+	 * generates a rowkey for tall table implementation.
+	 * rowkeys descend as the timestamp parameter ascends. 
 	 * rowkey format = SYMBOL_TIMESTAMP
-	 * Example: GOOG_1381396363000 
+	 * Example: GOOG_9223370654476953800 
 	 * @param symbol
 	 * @param time
 	 * @return
 	 */
-//	private String formRowkey(String symbol, Long time){
-	public static String formRowkey(String symbol, Long time){
-		//TODO &&&MJM NOT DE-PLAGGED YET.
-		// TODO Reverse the timestamp.
+	private String formRowkey(String symbol, Long time){
 		String timeString = String.format("%d", (Long.MAX_VALUE-time) );
 		String rowkey = symbol + delimChar + timeString; 
-		// System.out.println("DEBUG formRowkey(): formatted rowkey as: " + rowkey); // TODO &&&MJM Remove this.
+		// System.out.println("DEBUG formRowkey(): formatted rowkey as: " + rowkey); // DEBUG
 		
 		return rowkey;
 	}
@@ -100,37 +82,27 @@ public class TradeDAOTall implements TradeDAO {
 	 */
 	@Override
 	public List<Trade> getTradesByDate(String symbol, Long from, Long to) throws IOException{
-		System.out.println("DEBUG: Entered TradeDAOTall.getTradesByDate()"); // TODO &&&MJM Remove this.
-	//TODO &&&MJM NOT DE-PLAGGED YET.
 		
 		// Create a list to store resulting trades
 		List<Trade> trades = new ArrayList<Trade>();  
 		
 		// Scan all applicable rows for the symbol, between given timestamps
-		System.out.println("DEBUG getTradesByDate(): from= " + from + ", to= "+ to); // TODO &&&MJM Remove this.
 		Scan scan = new Scan(Bytes.toBytes(formRowkey(symbol, to)), 
 				Bytes.toBytes(formRowkey(symbol, from)) );
 		// scan.addFamily(baseCF); // Adding the CF isn't necessary if there's only one.
 		
 		ResultScanner scanner = table.getScanner(scan);
-		System.out.println("DEBUG getTradesByDate() result scanner:");
-		System.out.println(scanner);
-
 
 		// Iterate through the scanner, and transfer scan results to our list of Trades. 
-		// Populate these from scan to trade: Date tradeDate, String tradeSymbol, Float tradePrice, Long tradeVolume
-		System.out.println("DEBUG getTradesByDate(): Entering FOR loop next.");
+		// Populate these: Date tradeDate, String tradeSymbol, Float tradePrice, Long tradeVolume
 		for (Result result : scanner){
-
 			// Extract the symbol & timestamp from the result's rowkey
 			String rowkey = Bytes.toString(result.getRow()); // rowkey format is SYMBOL_TIMESTAMP
 			String[] rowkeyTokens = rowkey.split(String.valueOf(delimChar)); // tokenize rowkey
 			Long time = Long.MAX_VALUE - Long.parseLong(rowkeyTokens[1]); // reconstitute a valid timestamp from the rowkey digits 
-			System.out.println("DEBUG getTradesByDate() FOR loop: reconstituted timestamp= " + 
-					time); // TODO &&&MJM Remove this.
 			
 			// Extract price & volume from the result 
-			Float price = Bytes.toLong(result.getValue(baseCF, priceCol)) / 100f; // Price data is stored as long byte-array * 100. Extract to Float.
+			Float price = (float) (Bytes.toLong(result.getValue(baseCF, priceCol))) / 100f; // (Price*100) is stored as long byte-array. Divide by 100 to extract to a Float.
 			Long volume = Bytes.toLong(result.getValue(baseCF, volumeCol));
 
 			// Add the new trade to the list of trades
@@ -138,33 +110,5 @@ public class TradeDAOTall implements TradeDAO {
 		}
 		return trades;
 	}
-
-	/**
-	 * gets a specific row
-	 * @param rowkey 
-	 * @return
-	 * @throws IOException
-	 */
-	@Override
-	public Trade getRow(String rowkey) throws IOException{
-	// TODO &&&MJM REMOVE THIS METHOD.
-		Get get = new Get(Bytes.toBytes(rowkey));
-		Result result = table.get(get);
-		System.out.println(result);
-		
-		// Populate the price & volume into 
-		Float price = Bytes.toLong(result.getValue(baseCF, priceCol)) / 100f; // Price data is stored as long byte-array * 100. Extract to Float.
-		Long volume = Bytes.toLong(result.getValue(baseCF, volumeCol));
-		String[] rowkeyTokens = rowkey.split(String.valueOf(delimChar)); // tokenize rowkey
-		Long time = Long.MAX_VALUE - Long.parseLong(rowkeyTokens[1]); // reconstitute a valid timestamp from the rowkey digits 
-		
-		// Add the new trade to the list of trades
-		Trade trade = new Trade(rowkeyTokens[0], price, volume, time);
-		// System.out.println("DEBUG getRow(): Trade object is: ");
-		// System.out.println(trade);
-
-		return trade;
-	}
-
 	
 }
