@@ -23,8 +23,6 @@ public class TradeDAOTall implements TradeDAO {
 	private final static char delimChar = '_';
 
 	// TODO replace "/user/mapr" with your user directory.
-	// Don't forget to create this table in HBase shell first:
-	// hbase> create '/user/mapr/trades_tall',{NAME=>'CF1'}
 	private static String tablePath = "/user/mapr/trades_tall";
 	
 	/**
@@ -52,8 +50,8 @@ public class TradeDAOTall implements TradeDAO {
 		String rowkey = formRowkey(trade.getSymbol(), trade.getTime());
 		
 		Put put = new Put(Bytes.toBytes(rowkey));
-		Float priceNoDecimals = trade.getPrice() * 100f;
-		put.add(baseCF, priceCol, Bytes.toBytes(priceNoDecimals.longValue() )); // Convert price to a long before writing.
+		Float priceNoDecimals = trade.getPrice() * 100f; // The value to store is (long) price*100
+		put.add(baseCF, priceCol, Bytes.toBytes(priceNoDecimals.longValue() )); // Store as byte array of long, not float
 		put.add(baseCF, volumeCol, Bytes.toBytes(trade.getVolume()));
 
 		table.put(put);
@@ -69,6 +67,7 @@ public class TradeDAOTall implements TradeDAO {
 	 * @return
 	 */
 	private String formRowkey(String symbol, Long time){
+		// TODO Exercise 3, task 1: Construct the rowkey
 		String timeString = String.format("%d", (Long.MAX_VALUE-time) );
 		String rowkey = symbol + delimChar + timeString; 
 		// System.out.println("DEBUG formRowkey(): formatted rowkey as: " + rowkey); // DEBUG
@@ -82,7 +81,8 @@ public class TradeDAOTall implements TradeDAO {
 	 */
 	@Override
 	public List<Trade> getTradesByDate(String symbol, Long from, Long to) throws IOException{
-		
+		// TODO Exercise 3, task 2: Implement getTradesByDate()
+
 		// Create a list to store resulting trades
 		List<Trade> trades = new ArrayList<Trade>();  
 		

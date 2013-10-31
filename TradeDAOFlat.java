@@ -59,8 +59,6 @@ public class TradeDAOFlat implements TradeDAO {
 
 
 	// TODO replace "/user/mapr" with your user directory.
-	// Don't forget to create this table in HBase shell first:
-	// hbase> create '/user/mapr/trades_flat',{NAME=>'price',NAME=>'vol',NAME=>'stats'}
 	private static String tablePath = "/user/mapr/trades_flat";
 
 	/**
@@ -91,8 +89,8 @@ public class TradeDAOFlat implements TradeDAO {
 
 		// Put the price to the price column family
 		Put put = new Put(Bytes.toBytes(rowkey));
-		Float priceNoDecimals = trade.getPrice() * 100f;
-		byte[] priceNoDecimalsAsLongBytes = Bytes.toBytes(priceNoDecimals.longValue() ); // Convert price to a long before writing.
+		Float priceNoDecimals = trade.getPrice() * 100f; // The value to store is (long) price*100
+		byte[] priceNoDecimalsAsLongBytes = Bytes.toBytes(priceNoDecimals.longValue() ); // Store as byte array of long, not float
 		put.add(priceCF, hourCol, trade.getTime(), priceNoDecimalsAsLongBytes);
 		put.add(volumeCF, hourCol, trade.getTime(), Bytes.toBytes(trade.getVolume()));
 

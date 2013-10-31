@@ -32,7 +32,8 @@ public class CreateTableUtils {
 		HColumnDescriptor coldef;
 		for (byte[] colFam : colFams) {
 			coldef = new HColumnDescriptor(colFam);
-			// TODO: coldef.setMaxVersions(1000000000);
+			// TODO Exercise 3: Set max versions to 3,600,000 or higher. Uncomment the line below.
+			// TODO: coldef.setMaxVersions(4000000);
 			desc.addFamily(coldef);
 		}
 		admin.createTable(desc);
